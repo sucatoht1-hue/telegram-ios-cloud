@@ -121,7 +121,7 @@ describe("handleTelegramUpdate", () => {
   it("hides GitHub failures", async () => {
     const { bundle, sent, github } = deps();
     github.getSessionStatus.mockRejectedValueOnce(new Error("GitHub API 500: gh"));
-    await handleTelegramUpdate(update("/iphone"), bundle);
+    await expect(handleTelegramUpdate(update("/iphone"), bundle)).rejects.toThrow(/GitHub API 500/);
     expect(github.startSession).not.toHaveBeenCalled();
     expect(sent).toEqual([GITHUB_ERROR_TEXT]);
   });

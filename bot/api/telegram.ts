@@ -34,7 +34,7 @@ export async function handleWebhook(
     const config = loadConfig(env);
     await handleTelegramUpdate(update as TelegramUpdate, createDeps(config));
   } catch (error) {
-    return new Response(publicError(error), { status: 500 });
+    return commandFailure(publicError(error));
   }
 
   return new Response(JSON.stringify({ ok: true }), {
@@ -69,8 +69,22 @@ function headerValue(headers: HeaderBag | undefined, name: string): string | nul
 
 function publicError(error: unknown): string {
   const message = error instanceof Error ? error.message : "internal error";
-  if (message.startsWith("Missing required environment variable:")) return message;
+  const redacted = message
+    .replace(/github_pat_[A-Za-z0-9_]+/g, "[redacted]")
+    .replace(/\d{6,}:[A-Za-z0-9_-]+/g, "[redacted]")
+    .replace(/Bearer\s+\S+/gi, "Bearer [redacted]");
+  if (redacted.startsWith("Missing required environment variable:")) return redacted;
+  if (redacted.startsWith("GitHub API ")) return redacted.slice(0, 240);
+  if (redacted.startsWith("GITHUB_REPOSITORY")) return redacted.slice(0, 240);
+  if (/fetch|network|ENOTFOUND|ECONN/i.test(redacted)) return redacted.slice(0, 240);
   return "internal error";
+}
+
+function commandFailure(detail: string): Response {
+  return new Response(JSON.stringify({ ok: true, detail }), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  });
 }
 
 export async function handleNodeRequest(
@@ -96,7 +110,7 @@ export async function handleNodeRequest(
     const config = loadConfig(env);
     await handleTelegramUpdate(update as TelegramUpdate, createDeps(config));
   } catch (error) {
-    response.status(500).send(publicError(error));
+    response.status(200).json({ ok: true, detail: publicError(error) });
     return;
   }
 

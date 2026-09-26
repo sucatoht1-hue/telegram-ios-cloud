@@ -72,8 +72,9 @@ export async function handleTelegramUpdate(
       default:
         await deps.telegram.sendMessage(chatId, UNKNOWN_TEXT);
     }
-  } catch {
+  } catch (error) {
     await deps.telegram.sendMessage(chatId, GITHUB_ERROR_TEXT);
+    throw error;
   }
 }
 
