@@ -34,19 +34,33 @@ jobs:
         id: verify
         run: bash scripts/verify-macos.sh
 
+      - name: Install Baguette and cloudflared
+        run: |
+          set -euo pipefail
+          export PATH="/opt/homebrew/bin:${PATH}"
+          /opt/homebrew/bin/brew install baguette cloudflared
+          echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
+
       - name: Boot iOS Simulator
         id: boot
         env:
           SESSION_KEY: ${{ inputs.session_key }}
         run: bash scripts/boot-simulator.sh "$SESSION_KEY"
 
+      - name: Claim simulator touch
+        env:
+          UDID: ${{ steps.boot.outputs.udid }}
+        run: |
+          set -euo pipefail
+          export PATH="/opt/homebrew/bin:${PATH}"
+          baguette boot --udid "$UDID"
+          baguette press --udid "$UDID" --button volume-up
+
       - name: Start HTTPS tunnel
         id: tunnel
         run: |
           set -euo pipefail
           export PATH="/opt/homebrew/bin:${PATH}"
-          /opt/homebrew/bin/brew install baguette cloudflared
-          echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
           bash scripts/start-tunnel.sh
 
       - name: Start Baguette
