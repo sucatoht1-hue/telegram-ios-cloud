@@ -26,14 +26,14 @@ export function loadConfig(env: NodeJS.ProcessEnv): BotConfig {
   const sessionHmacSecret = required(env, "SESSION_HMAC_SECRET");
 
   const rawDuration = env.SESSION_DURATION_MINUTES;
-  let sessionDurationMinutes = 20;
+  let sessionDurationMinutes = 60;
   if (rawDuration !== undefined && rawDuration.trim() !== "") {
     if (!/^[0-9]+$/.test(rawDuration.trim())) {
-      throw new Error("SESSION_DURATION_MINUTES must be an integer between 5 and 30");
+      throw new Error("SESSION_DURATION_MINUTES must be an integer between 5 and 90");
     }
     sessionDurationMinutes = Number(rawDuration.trim());
-    if (sessionDurationMinutes < 5 || sessionDurationMinutes > 30) {
-      throw new Error("SESSION_DURATION_MINUTES must be an integer between 5 and 30");
+    if (sessionDurationMinutes < 5 || sessionDurationMinutes > 90) {
+      throw new Error("SESSION_DURATION_MINUTES must be an integer between 5 and 90");
     }
   }
 

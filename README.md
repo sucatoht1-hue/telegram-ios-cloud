@@ -13,7 +13,7 @@ Isto não é um iPhone desenhado em HTML. Se o navegador não estiver controland
 5. O Baguette sobe confiando **somente** aquele hostname `*.trycloudflare.com`.
 6. O workflow só avisa o Telegram depois que `GET /simulators.json` responde 2xx pelo túnel.
 7. O botão `ABRIR IPHONE` abre `/simulators/<udid>`.
-8. A sessão dura de 5 a 30 minutos (padrão 20) e depois desliga.
+8. A sessão dura de 5 a 90 minutos (padrão 60) e depois desliga.
 
 O estado fica no GitHub Actions. Não há banco neste marco.
 
@@ -27,7 +27,7 @@ Vercel (projeto do diretório `bot/`):
 - `GITHUB_TOKEN`
 - `GITHUB_REPOSITORY` (`owner/telegram-ios-cloud`)
 - `SESSION_HMAC_SECRET`
-- `SESSION_DURATION_MINUTES` (opcional, 5–30, padrão 20)
+- `SESSION_DURATION_MINUTES` (opcional, 5–90, padrão 60)
 
 GitHub Actions, secret do repositório:
 

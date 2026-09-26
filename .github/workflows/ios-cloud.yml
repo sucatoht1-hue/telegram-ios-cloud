@@ -14,7 +14,7 @@ on:
         required: true
         type: string
       duration_minutes:
-        description: Session length in minutes (5-30)
+        description: Session length in minutes (5-90)
         required: true
         type: string
 
@@ -25,7 +25,7 @@ jobs:
   session:
     name: Temporary iOS session
     runs-on: macos-26
-    timeout-minutes: 35
+    timeout-minutes: 110
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -121,7 +121,7 @@ jobs:
             exit 1
           fi
           minutes=$((10#${DURATION_MINUTES}))
-          if (( minutes < 5 || minutes > 30 )); then
+          if (( minutes < 5 || minutes > 90 )); then
             echo "duration out of range" >&2
             exit 1
           fi

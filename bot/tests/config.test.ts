@@ -11,13 +11,13 @@ const complete = {
 };
 
 describe("loadConfig", () => {
-  it("defaults duration to 20", () => {
-    expect(loadConfig(complete).sessionDurationMinutes).toBe(20);
+  it("defaults duration to 60", () => {
+    expect(loadConfig(complete).sessionDurationMinutes).toBe(60);
   });
 
-  it("accepts a duration inside 5..30", () => {
+  it("accepts a duration inside 5..90", () => {
     expect(loadConfig({ ...complete, SESSION_DURATION_MINUTES: "5" }).sessionDurationMinutes).toBe(5);
-    expect(loadConfig({ ...complete, SESSION_DURATION_MINUTES: "30" }).sessionDurationMinutes).toBe(30);
+    expect(loadConfig({ ...complete, SESSION_DURATION_MINUTES: "90" }).sessionDurationMinutes).toBe(90);
   });
 
   it.each([
@@ -32,7 +32,7 @@ describe("loadConfig", () => {
     expect(() => loadConfig(env)).toThrow(new RegExp(key));
   });
 
-  it.each(["4", "31", "20.5", "abc"])("throws when duration is %s", (value) => {
+  it.each(["4", "91", "20.5", "abc"])("throws when duration is %s", (value) => {
     expect(() => loadConfig({ ...complete, SESSION_DURATION_MINUTES: value })).toThrow(
       /SESSION_DURATION_MINUTES/,
     );
