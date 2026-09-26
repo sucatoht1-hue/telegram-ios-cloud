@@ -50,7 +50,7 @@ if mode == "success":
                 "🍎 iPhone online\n"
                 f"Dispositivo: {device_name}\n"
                 f"Runtime: {runtime_name}\n"
-                "A imagem abre no modo rápido, para caber mais quadros.\n"
+                "A imagem abre em 60 fps, com resolução menor para caber no caminho.\n"
                 "A sessão é temporária."
             ),
             "reply_markup": {

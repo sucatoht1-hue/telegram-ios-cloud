@@ -11,17 +11,28 @@ INJECT = b"""<script>
 (function () {
   var Orig = WebSocket;
   function Wrapped(url, protocols) {
-    var ws = protocols === undefined ? new Orig(url) : new Orig(url, protocols);
+    var target = String(url);
     try {
-      if (String(url).indexOf("/stream") !== -1) {
+      if (target.indexOf("/stream") !== -1 && window.FrameDecoder &&
+          window.FrameDecoder.isHardwareAvailable && window.FrameDecoder.isHardwareAvailable()) {
+        if (target.indexOf("format=") === -1) {
+          target += (target.indexOf("?") === -1 ? "?" : "&") + "format=avcc";
+        } else {
+          target = target.replace(/format=[^&]+/, "format=avcc");
+        }
+      }
+    } catch (e) {}
+    var ws = protocols === undefined ? new Orig(target) : new Orig(target, protocols);
+    try {
+      if (target.indexOf("/stream") !== -1) {
         ws.addEventListener("open", function () {
           function send(obj) {
             try { ws.send(JSON.stringify(obj)); } catch (e) {}
           }
           function tune() {
             send({cmd: "set_scale", type: "set_scale", scale: 3});
-            send({cmd: "set_fps", type: "set_fps", fps: 30});
-            send({cmd: "set_bitrate", type: "set_bitrate", bps: 500000});
+            send({cmd: "set_fps", type: "set_fps", fps: 60});
+            send({cmd: "set_bitrate", type: "set_bitrate", bps: 1200000});
           }
           setTimeout(tune, 400);
           setTimeout(tune, 1500);
