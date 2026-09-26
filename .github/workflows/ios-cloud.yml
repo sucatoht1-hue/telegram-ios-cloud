@@ -1,0 +1,167 @@
+name: iOS Cloud
+
+run-name: iOS Cloud ${{ inputs.session_key }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      session_key:
+        description: Stable session key
+        required: true
+        type: string
+      chat_id:
+        description: Telegram chat id
+        required: true
+        type: string
+      duration_minutes:
+        description: Session length in minutes (5-30)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  session:
+    name: Temporary iOS session
+    runs-on: macos-26
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify macOS runner
+        id: verify
+        run: bash scripts/verify-macos.sh
+
+      - name: Boot iOS Simulator
+        id: boot
+        env:
+          SESSION_KEY: ${{ inputs.session_key }}
+        run: bash scripts/boot-simulator.sh "$SESSION_KEY"
+
+      - name: Start HTTPS tunnel
+        id: tunnel
+        run: |
+          set -euo pipefail
+          export PATH="/opt/homebrew/bin:${PATH}"
+          /opt/homebrew/bin/brew install baguette cloudflared
+          echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
+          bash scripts/start-tunnel.sh
+
+      - name: Start Baguette
+        id: baguette
+        env:
+          TUNNEL_HOST: ${{ steps.tunnel.outputs.host }}
+        run: bash scripts/start-baguette.sh "$TUNNEL_HOST"
+
+      - name: Verify remote Baguette
+        id: remote
+        env:
+          TUNNEL_URL: ${{ steps.tunnel.outputs.url }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${TUNNEL_URL:-}" ]]; then
+            echo "remote verification failed" >&2
+            exit 1
+          fi
+          deadline=$((SECONDS + 45))
+          while (( SECONDS < deadline )); do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 "${TUNNEL_URL}/simulators.json" || true)"
+            if [[ "${code}" =~ ^2 ]]; then
+              echo "remote health success"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "remote verification failed" >&2
+          exit 1
+
+      - name: Notify Telegram
+        id: notify
+        if: success()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ inputs.chat_id }}
+          TUNNEL_URL: ${{ steps.tunnel.outputs.url }}
+          UDID: ${{ steps.boot.outputs.udid }}
+          DEVICE_NAME: ${{ steps.boot.outputs.device_name }}
+          RUNTIME_NAME: ${{ steps.boot.outputs.runtime_name }}
+        run: bash scripts/notify-telegram.sh success "$CHAT_ID" "$TUNNEL_URL" "$UDID" "$DEVICE_NAME" "$RUNTIME_NAME"
+
+      - name: Keep session alive
+        id: keep
+        env:
+          DURATION_MINUTES: ${{ inputs.duration_minutes }}
+          UDID: ${{ steps.boot.outputs.udid }}
+          BAGUETTE_PID: ${{ steps.baguette.outputs.pid }}
+          TUNNEL_PID: ${{ steps.tunnel.outputs.pid }}
+        run: |
+          set -euo pipefail
+          cleanup() {
+            bash scripts/cleanup-session.sh "${UDID:-}" "${BAGUETTE_PID:-}" "${TUNNEL_PID:-}" || true
+          }
+          trap cleanup EXIT INT TERM
+          if ! [[ "${DURATION_MINUTES}" =~ ^[0-9]+$ ]]; then
+            echo "invalid duration" >&2
+            exit 1
+          fi
+          minutes=$((10#${DURATION_MINUTES}))
+          if (( minutes < 5 || minutes > 30 )); then
+            echo "duration out of range" >&2
+            exit 1
+          fi
+          sleep $((minutes * 60))
+
+      - name: Notify expiration
+        if: success()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ inputs.chat_id }}
+        run: bash scripts/notify-telegram.sh expired "$CHAT_ID"
+
+      - name: Report failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ inputs.chat_id }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+          BOOT_OUTCOME: ${{ steps.boot.outcome }}
+          TUNNEL_OUTCOME: ${{ steps.tunnel.outcome }}
+          BAGUETTE_OUTCOME: ${{ steps.baguette.outcome }}
+          REMOTE_OUTCOME: ${{ steps.remote.outcome }}
+          NOTIFY_OUTCOME: ${{ steps.notify.outcome }}
+        run: |
+          set -euo pipefail
+          stage="Session"
+          reason="A sessão não chegou a ficar online."
+          if [[ "${VERIFY_OUTCOME}" == "failure" ]]; then
+            stage="Environment"
+            reason="O runner não é Apple Silicon com Xcode 26 e um runtime iOS 26."
+          elif [[ "${BOOT_OUTCOME}" == "failure" ]]; then
+            stage="CoreSimulator"
+            reason="Não foi possível criar ou iniciar o simulador."
+          elif [[ "${TUNNEL_OUTCOME}" == "failure" ]]; then
+            stage="Tunnel"
+            reason="O túnel HTTPS temporário não ficou pronto."
+          elif [[ "${BAGUETTE_OUTCOME}" == "failure" ]]; then
+            stage="Baguette"
+            reason="O Baguette não respondeu em 127.0.0.1:8421."
+          elif [[ "${REMOTE_OUTCOME}" == "failure" ]]; then
+            stage="Remote verification"
+            reason="O Baguette não respondeu pelo túnel HTTPS."
+          elif [[ "${NOTIFY_OUTCOME}" == "failure" ]]; then
+            stage="Telegram"
+            reason="Não foi possível enviar a mensagem no Telegram."
+          elif [[ "${NOTIFY_OUTCOME}" == "success" ]]; then
+            exit 0
+          fi
+          bash scripts/notify-telegram.sh failure "$CHAT_ID" "$stage" "$reason"
+
+      - name: Shutdown Simulator
+        if: always()
+        env:
+          UDID: ${{ steps.boot.outputs.udid }}
+          BAGUETTE_PID: ${{ steps.baguette.outputs.pid }}
+          TUNNEL_PID: ${{ steps.tunnel.outputs.pid }}
+        run: bash scripts/cleanup-session.sh "$UDID" "$BAGUETTE_PID" "$TUNNEL_PID"
