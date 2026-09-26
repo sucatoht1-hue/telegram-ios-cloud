@@ -31,8 +31,8 @@ available="$(printf '%s' "${runtimes_json}" | jq -r '
   .runtimes[]?
   | select(.isAvailable == true)
   | select(
-      ((.version // "") | test("^26(\\..*|$)"))
-      or ((.name // "") | test("^iOS 26(\\..*|$)"))
+      ((.name // "") | test("^iOS 26(\\..*|$)"))
+      or ((.identifier // "") | test("\\.iOS-26"))
     )
   | .identifier // empty
 ')"

@@ -14,8 +14,8 @@ runtime_id="$(printf '%s' "${runtimes_json}" | jq -r '
   [ .runtimes[]?
     | select(.isAvailable == true)
     | select(
-        ((.version // "") | test("^26(\\..*|$)"))
-        or ((.name // "") | test("^iOS 26(\\..*|$)"))
+        ((.name // "") | test("^iOS 26(\\..*|$)"))
+        or ((.identifier // "") | test("\\.iOS-26"))
       )
     | {id: .identifier, name: .name, version: (.version // "0")}
   ]
@@ -53,6 +53,8 @@ if [[ -z "${device_name}" ]]; then
   fail device-type
 fi
 
+echo "selected_runtime=${runtime_id}"
+echo "selected_device=${device_name}"
 udid="$(xcrun simctl create "Telegram iPhone ${short}" "${device_id}" "${runtime_id}" | tr -d '[:space:]')"
 xcrun simctl boot "${udid}"
 xcrun simctl bootstatus "${udid}" -b

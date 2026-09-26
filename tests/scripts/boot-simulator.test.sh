@@ -127,8 +127,18 @@ printf '%s\n' '{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iO
 no_phone="${tmp}/no-phone.json"
 printf '%s\n' '{"devicetypes":[{"name":"iPad Pro","identifier":"com.apple.CoreSimulator.SimDeviceType.iPad-Pro"}]}' > "${no_phone}"
 
+mixed_runtime="${tmp}/mixed-runtimes.json"
+cat > "${mixed_runtime}" <<'EOF'
+{"runtimes":[
+  {"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-26-1","name":"iOS 26.1","version":"26.1","isAvailable":true},
+  {"identifier":"com.apple.CoreSimulator.SimRuntime.xrOS-26-5","name":"visionOS 26.5","version":"26.5","isAvailable":true},
+  {"identifier":"com.apple.CoreSimulator.SimRuntime.tvOS-26-5","name":"tvOS 26.5","version":"26.5","isAvailable":true}
+]}
+EOF
+
 run_case "preferred" "${preferred_runtime}" "${preferred_devices}" "deadbeefcafebabe" "iPhone 17 Pro" "com.apple.CoreSimulator.SimRuntime.iOS-26-1"
 run_case "fallback" "${preferred_runtime}" "${fallback_devices}" "abc12345ffffeeee" "iPhone 16" "com.apple.CoreSimulator.SimRuntime.iOS-26-1"
+run_case "iphone runtime only" "${mixed_runtime}" "${preferred_devices}" "cafebabedeadbeef" "iPhone 17 Pro" "com.apple.CoreSimulator.SimRuntime.iOS-26-1"
 
 no_bin="${tmp}/no-bin"
 mkdir -p "${no_bin}"
