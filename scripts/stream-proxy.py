@@ -18,11 +18,13 @@ INJECT = b"""<script>
           function send(obj) {
             try { ws.send(JSON.stringify(obj)); } catch (e) {}
           }
-          setTimeout(function () {
-            send({type: "set_scale", scale: 3});
-            send({type: "set_fps", fps: 30});
-            send({type: "set_bitrate", bps: 500000});
-          }, 500);
+          function tune() {
+            send({cmd: "set_scale", type: "set_scale", scale: 3});
+            send({cmd: "set_fps", type: "set_fps", fps: 30});
+            send({cmd: "set_bitrate", type: "set_bitrate", bps: 500000});
+          }
+          setTimeout(tune, 400);
+          setTimeout(tune, 1500);
         });
       }
     } catch (e) {}
@@ -146,7 +148,9 @@ async def handle(client_reader: asyncio.StreamReader, client_writer: asyncio.Str
                 encoded = True
             kept.append(line)
         body = b"" if method == "HEAD" else await read_body(upstream_reader, resp_rest, content_length)
-        if "text/html" in content_type and not encoded and method != "HEAD":
+        if method != "HEAD" and not encoded and (
+            "text/html" in content_type or body.lstrip()[:32].lower().startswith((b"<!doctype html", b"<html"))
+        ):
             body = inject_html(body)
         kept.append(f"Content-Length: {len(body)}".encode())
         client_writer.write(b"\r\n".join(resp_lines[:1] + kept) + b"\r\n\r\n" + body)
