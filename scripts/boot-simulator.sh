@@ -30,7 +30,7 @@ fi
 
 runtime_name="$(printf '%s' "${runtimes_json}" | jq -r --arg id "${runtime_id}" '
   .runtimes[]? | select(.identifier == $id) | .name // empty
-' | head -n 1)"
+' | sed -n '1p')"
 
 devices_json="$(xcrun simctl list devicetypes -j)"
 device_id="$(printf '%s' "${devices_json}" | jq -r '
@@ -47,7 +47,7 @@ fi
 
 device_name="$(printf '%s' "${devices_json}" | jq -r --arg id "${device_id}" '
   .devicetypes[]? | select(.identifier == $id) | .name // empty
-' | head -n 1)"
+' | sed -n '1p')"
 
 if [[ -z "${device_name}" ]]; then
   fail device-type

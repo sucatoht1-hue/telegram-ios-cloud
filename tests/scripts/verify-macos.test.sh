@@ -49,6 +49,7 @@ if [[ "${FAKE_XCODE_MISSING:-}" == "1" ]]; then
   exit 1
 fi
 printf 'Xcode %s\n' "${FAKE_XCODE:-26.0.1}"
+sleep 0.2
 printf 'Build version 17A400\n'
 EOF
   cat > "${bin}/xcrun" <<'EOF'

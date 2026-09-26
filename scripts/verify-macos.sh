@@ -15,9 +15,8 @@ fi
 macos_ver="$(sw_vers -productVersion 2>/dev/null || echo unknown)"
 echo "macos: ${macos_ver}"
 
-if ! xcode_line="$(xcodebuild -version 2>/dev/null | head -n 1)"; then
-  fail xcode
-fi
+xcode_out="$(xcodebuild -version 2>&1 || true)"
+xcode_line="$(printf '%s\n' "${xcode_out}" | sed -n '1p')"
 echo "xcode: ${xcode_line}"
 major="$(printf '%s\n' "${xcode_line}" | sed -n 's/^Xcode \([0-9][0-9]*\).*/\1/p')"
 if [[ "${major}" != "26" ]]; then
