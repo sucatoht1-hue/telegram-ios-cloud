@@ -19,4 +19,8 @@ fi
 
 stop_pid "${baguette_pid}"
 stop_pid "${tunnel_pid}"
+if [[ -f /tmp/telegram-ios-cloud-stream-proxy.pid ]]; then
+  stop_pid "$(cat /tmp/telegram-ios-cloud-stream-proxy.pid)"
+  rm -f /tmp/telegram-ios-cloud-stream-proxy.pid
+fi
 exit 0

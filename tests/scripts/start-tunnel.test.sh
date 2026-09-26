@@ -34,20 +34,29 @@ fi
 sleep "${FAKE_SLEEP:-60}"
 EOF
 chmod +x "${bin}/cloudflared"
+cat > "${bin}/python3" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "${PROXY_LOG:?}"
+sleep "${FAKE_SLEEP:-60}"
+EOF
+chmod +x "${bin}/python3"
 
 call_log="${tmp}/cloudflared.log"
+proxy_log="${tmp}/proxy.log"
 : > "${call_log}"
+: > "${proxy_log}"
 output="${tmp}/output"
 : > "${output}"
 stdout="${tmp}/stdout"
 url="https://random-otter-42.trycloudflare.com"
-if CALL_LOG="${call_log}" FAKE_TUNNEL_URL="${url}" FAKE_TUNNEL_NOISE="https://evil.example.com" \
+if CALL_LOG="${call_log}" PROXY_LOG="${proxy_log}" FAKE_TUNNEL_URL="${url}" FAKE_TUNNEL_NOISE="https://evil.example.com" \
   TUNNEL_WAIT_SECONDS=3 GITHUB_OUTPUT="${output}" PATH="${bin}:${PATH}" \
   bash "${tunnel}" > "${stdout}"; then
   if grep -q "::add-mask::${url}" "${stdout}" \
     && grep -q "^url=${url}$" "${output}" \
     && grep -q "^host=random-otter-42.trycloudflare.com$" "${output}" \
-    && grep -q "tunnel --url http://127.0.0.1:8421 --no-autoupdate" "${call_log}" \
+    && grep -q "tunnel --url http://127.0.0.1:8422 --no-autoupdate" "${call_log}" \
+    && grep -q "stream-proxy.py" "${proxy_log}" \
     && ! grep -q "evil.example.com" "${output}"; then
     pass "parse and mask quick tunnel"
   else
@@ -55,10 +64,15 @@ if CALL_LOG="${call_log}" FAKE_TUNNEL_URL="${url}" FAKE_TUNNEL_NOISE="https://ev
     cat "${stdout}" >&2 || true
     cat "${output}" >&2 || true
     cat "${call_log}" >&2 || true
+    cat "${proxy_log}" >&2 || true
   fi
   pid_line="$(grep '^pid=' "${output}" | cut -d= -f2- || true)"
+  proxy_pid_line="$(grep '^proxy_pid=' "${output}" | cut -d= -f2- || true)"
   if [[ -n "${pid_line}" ]]; then
     pids+=("${pid_line}")
+  fi
+  if [[ -n "${proxy_pid_line}" ]]; then
+    pids+=("${proxy_pid_line}")
   fi
 else
   fail "parse and mask quick tunnel"
@@ -67,7 +81,7 @@ fi
 timeout_log="${tmp}/timeout.log"
 : > "${timeout_log}"
 stderr="${tmp}/timeout.err"
-if CALL_LOG="${timeout_log}" FAKE_TUNNEL_URL="" TUNNEL_WAIT_SECONDS=1 PATH="${bin}:${PATH}" \
+if CALL_LOG="${timeout_log}" PROXY_LOG="${tmp}/timeout-proxy.log" FAKE_TUNNEL_URL="" TUNNEL_WAIT_SECONDS=1 PATH="${bin}:${PATH}" \
   bash "${tunnel}" > /dev/null 2>"${stderr}"; then
   fail "missing url times out"
 else

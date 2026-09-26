@@ -50,6 +50,7 @@ if mode == "success":
                 "🍎 iPhone online\n"
                 f"Dispositivo: {device_name}\n"
                 f"Runtime: {runtime_name}\n"
+                "A imagem abre no modo rápido, para caber mais quadros.\n"
                 "A sessão é temporária."
             ),
             "reply_markup": {
