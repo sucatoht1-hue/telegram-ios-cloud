@@ -1,0 +1,15 @@
+{
+  "name": "telegram-ios-cloud-bot",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "configure-webhook": "node --experimental-strip-types scripts/configure-webhook.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}
