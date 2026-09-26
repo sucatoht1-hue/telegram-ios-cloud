@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { handleWebhook } from "../api/telegram.js";
+import { handleNodeRequest, handleWebhook } from "../api/telegram.js";
 import { HELP_TEXT } from "../src/index.js";
 import type { BotConfig } from "../src/types.js";
 
@@ -54,6 +54,47 @@ describe("handleWebhook", () => {
     );
     expect(response.status).toBe(200);
     expect(createDeps).toHaveBeenCalledOnce();
+    expect(sendMessage).toHaveBeenCalledWith("42", HELP_TEXT);
+  });
+
+  it("accepts the Node request used by Vercel serverless", async () => {
+    const sendMessage = vi.fn(async () => undefined);
+    const createDeps = vi.fn((config: BotConfig) => ({
+      config,
+      github: {
+        startSession: vi.fn(),
+        findLatestSessionRun: vi.fn(),
+        getSessionStatus: vi.fn(),
+        cancelSession: vi.fn(),
+      },
+      telegram: { sendMessage },
+    }));
+    let statusCode = 0;
+    let payload: unknown;
+    const response = {
+      status(code: number) {
+        statusCode = code;
+        return {
+          send(body: string) {
+            payload = body;
+          },
+          json(body: unknown) {
+            payload = body;
+          },
+        };
+      },
+    };
+    await handleNodeRequest(
+      {
+        headers: { "x-telegram-bot-api-secret-token": "top-secret" },
+        body: { update_id: 1, message: { text: "/start", chat: { id: 42 } } },
+      },
+      response,
+      env,
+      createDeps,
+    );
+    expect(statusCode).toBe(200);
+    expect(payload).toEqual({ ok: true });
     expect(sendMessage).toHaveBeenCalledWith("42", HELP_TEXT);
   });
 });
