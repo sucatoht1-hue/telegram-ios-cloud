@@ -53,8 +53,7 @@ jobs:
         run: |
           set -euo pipefail
           export PATH="/opt/homebrew/bin:${PATH}"
-          baguette boot --udid "$UDID"
-          baguette press --udid "$UDID" --button volume-up
+          baguette press --udid "$UDID" --button volume-up || echo "touch prime skipped"
 
       - name: Start HTTPS tunnel
         id: tunnel
