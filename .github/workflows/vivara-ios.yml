@@ -1,0 +1,63 @@
+name: VIVARA iPhone IPA
+run-name: VIVARA iPhone playable build
+on:
+  push:
+    branches:
+      - vivara-ios-playable
+    paths:
+      - 'vivara-ios/**'
+      - '.github/workflows/vivara-ios.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  iphone:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Validate tools
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-path
+          swift --version
+
+      - name: Build playable game for real iPhone
+        run: |
+          set -euo pipefail
+          cd vivara-ios
+          mkdir -p build/Payload/Vivara.app/www
+          cp Info.plist build/Payload/Vivara.app/Info.plist
+          cp www/index.html build/Payload/Vivara.app/www/index.html
+          curl -fLsS --retry 3 --connect-timeout 20 \
+            https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js \
+            -o build/Payload/Vivara.app/www/three.module.js
+          test "$(wc -c < build/Payload/Vivara.app/www/three.module.js)" -gt 300000
+          SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
+          xcrun swiftc AppDelegate.swift -sdk "$SDK" \
+            -target arm64-apple-ios15.0 -O \
+            -o build/Payload/Vivara.app/Vivara
+          chmod +x build/Payload/Vivara.app/Vivara
+          /usr/libexec/PlistBuddy -c "Print CFBundleExecutable" build/Payload/Vivara.app/Info.plist
+          codesign -f -s - --timestamp=none build/Payload/Vivara.app
+          codesign --verify --verbose=2 build/Payload/Vivara.app
+          file build/Payload/Vivara.app/Vivara
+          xcrun lipo -info build/Payload/Vivara.app/Vivara
+          plutil -lint build/Payload/Vivara.app/Info.plist
+          cd build
+          /usr/bin/zip -qry VIVARA-iPhone-jogavel.ipa Payload
+          unzip -t VIVARA-iPhone-jogavel.ipa | tail -1
+          ls -lh VIVARA-iPhone-jogavel.ipa
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: VIVARA-iPhone-jogavel
+          path: vivara-ios/build/VIVARA-iPhone-jogavel.ipa
+          if-no-files-found: error
+          retention-days: 7
