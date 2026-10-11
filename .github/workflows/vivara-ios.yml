@@ -39,7 +39,7 @@ jobs:
             -o build/Payload/Vivara.app/www/three.module.js
           test "$(wc -c < build/Payload/Vivara.app/www/three.module.js)" -gt 300000
           SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
-          xcrun swiftc AppDelegate.swift -sdk "$SDK" \
+          xcrun swiftc -parse-as-library AppDelegate.swift -sdk "$SDK" \
             -target arm64-apple-ios15.0 -O \
             -o build/Payload/Vivara.app/Vivara
           chmod +x build/Payload/Vivara.app/Vivara
