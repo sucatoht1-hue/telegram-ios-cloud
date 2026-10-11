@@ -38,6 +38,22 @@ jobs:
             https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js \
             -o build/Payload/Vivara.app/www/three.module.js
           test "$(wc -c < build/Payload/Vivara.app/www/three.module.js)" -gt 300000
+          # Bundle ES modules into one normal script. WKWebView file://
+          # installations can reject cross-origin module imports.
+          python3 - <<'PY'
+          from pathlib import Path
+          base = Path("build/Payload/Vivara.app/www")
+          path = base / "index.html"
+          html = path.read_text()
+          before = '<script type="module">'
+          start = html.index(before)
+          end = html.index("</script>", start) + len("</script>")
+          (base / "game-entry.js").write_text(html[start + len(before):html.index("</script>", start)])
+          path.write_text(html[:start] + '<script defer src="./game.bundle.js"></script>' + html[end:])
+          PY
+          ( cd build/Payload/Vivara.app/www && npx --yes esbuild@0.25.10 game-entry.js --bundle --format=iife --minify --target=safari15 --outfile=game.bundle.js )
+          node --check build/Payload/Vivara.app/www/game.bundle.js
+          rm build/Payload/Vivara.app/www/game-entry.js build/Payload/Vivara.app/www/three.module.js
           SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
           xcrun swiftc -parse-as-library AppDelegate.swift -sdk "$SDK" \
             -target arm64-apple-ios15.0 -O \
