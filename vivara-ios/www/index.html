@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+<title>VIVARA Social Universe</title>
+<style>
+:root{color-scheme:dark;--pink:#ef99c1;--gold:#edcb9d;--ink:#111121}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#0c0b1e;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif;color:#fff}
+button,input{font:inherit}button{color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+#scene{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
+#veil{position:fixed;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,8,21,.78),transparent 28%,transparent 65%,rgba(7,7,17,.62))}
+#head{position:absolute;left:0;right:0;top:env(safe-area-inset-top);padding:14px 17px;display:flex;align-items:center;justify-content:space-between;pointer-events:none;gap:10px}
+#head>*{pointer-events:auto}.logo{display:flex;gap:10px;align-items:center;text-shadow:0 2px 12px #0008}.mark{width:38px;height:38px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,#db8ac6,#8b78d3);font-size:23px;font-weight:900;box-shadow:0 8px 34px #da8cda40}.logo strong{font-size:15px;letter-spacing:.19em}.logo small{display:block;color:#e0d2e8;font-size:8px;letter-spacing:.15em}
+.room-pill{max-width:54%;padding:10px 13px;border-radius:19px;background:#181626ad;border:1px solid #ffffff26;backdrop-filter:blur(24px);box-shadow:0 8px 25px #0005;text-align:right}
+.room-pill strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.room-pill small{color:#c3bcd3;font-size:9px}
+#tip{position:absolute;top:calc(env(safe-area-inset-top) + 88px);left:20px;color:#e8d4e4bd;font-size:11px;letter-spacing:.04em;text-shadow:0 3px 15px #000c;pointer-events:none}
+#avatar-name{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 168px);left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;letter-spacing:.05em;text-shadow:0 2px 12px #000;pointer-events:none;background:#1c1329a1;padding:5px 11px;border-radius:20px}
+#joy{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 99px);left:19px;width:102px;height:102px;border:1px solid #ffffff43;border-radius:50%;background:#18121b64;box-shadow:inset 0 0 24px #ffffff0b;backdrop-filter:blur(9px);touch-action:none}
+#nub{position:absolute;top:32px;left:32px;width:36px;height:36px;border-radius:50%;border:1px solid #ffffff70;background:linear-gradient(135deg,#ffe5fb8a,#dda0cf56);box-shadow:0 3px 17px #0007;pointer-events:none}
+#controls{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 100px);right:13px;display:flex;flex-direction:column;gap:10px}
+.action{width:63px;height:63px;background:#1a152db8;border:1px solid #ffffff29;backdrop-filter:blur(18px);border-radius:21px;display:grid;place-items:center;align-content:center;gap:4px;box-shadow:0 8px 18px #0004}
+.action b{font-size:21px;font-weight:400}.action span{font-size:9px}
+#bottom{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-around;padding:12px 8px calc(env(safe-area-inset-bottom) + 12px);background:linear-gradient(0deg,#090a1beb,#161326b3);border-top:1px solid #ffffff18;backdrop-filter:blur(22px)}
+.nav{min-width:60px;background:transparent;text-align:center;display:grid;place-items:center;gap:3px;color:#d8ccd7;font-size:10px}.nav b{font-size:22px;font-weight:400}.nav.active{color:#ffb9df}
+#shade{position:fixed;inset:0;background:#08091798;backdrop-filter:blur(5px);z-index:11;display:none}#shade.open{display:block}
+#sheet{position:fixed;bottom:0;left:0;right:0;max-height:78vh;overflow:auto;z-index:12;border-radius:28px 28px 0 0;background:linear-gradient(140deg,#242039,#12101f);border-top:1px solid #ffffff3a;box-shadow:0 -15px 45px #0009;padding:12px 19px calc(23px + env(safe-area-inset-bottom));transform:translateY(110%);transition:transform .25s cubic-bezier(.2,.85,.25,1)}
+#sheet.open{transform:translateY(0)}.handle{height:4px;width:42px;border-radius:10px;background:#a49aaa55;margin:0 auto 16px}
+.sheet-top{display:flex;align-items:center;justify-content:space-between}.eyebrow{font-size:10px;color:#f4a8d2;font-weight:700;letter-spacing:.14em}.sheet-top h2{margin:6px 0 18px;font-size:25px}.close{border:1px solid #ffffff28;background:#ffffff15;width:38px;height:38px;border-radius:13px;font-size:25px}.section-title{font-size:11px;color:#c8c0d3;margin:17px 0 11px;font-weight:600;letter-spacing:.12em}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.opt{padding:16px 12px;text-align:left;border-radius:16px;background:#ffffff10;border:1px solid #ffffff19;min-height:48px;font-size:12px}.opt.selected{border-color:#fbb6de;background:#c57eaf27}.swatches{display:flex;gap:12px;flex-wrap:wrap}.swatch{width:43px;height:43px;border-radius:50%;border:3px solid #ffffff50}.swatch.selected{outline:2px solid #ffd2ee;outline-offset:2px}
+.note{margin:12px 0 0;color:#bfb9c9;font-size:11px;line-height:1.5}.textrow{display:flex;gap:8px}.textrow input{min-width:0;flex:1;padding:13px 14px;background:#ffffff16;border-radius:15px;border:1px solid #ffffff26;color:white;outline:0}.send{background:#e8a6d0;border-radius:15px;padding:0 19px;color:#1b1020;font-weight:800}.messages{height:196px;overflow-y:auto;border-radius:16px;border:1px solid #ffffff17;background:#090b185e;padding:12px;color:#eee;font-size:12px;line-height:1.8}
+#status{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 82px);left:50%;transform:translateX(-50%);background:#27203be5;border:1px solid #ffffff25;border-radius:12px;opacity:0;transition:opacity .2s;pointer-events:none;padding:10px 14px;font-size:12px;white-space:nowrap;max-width:95vw;overflow:hidden;text-overflow:ellipsis}
+#status.show{opacity:1}@media(min-width:800px){#head{padding:20px 40px}#controls{right:30px}#joy{left:35px}#sheet{left:auto;width:410px;right:14px;bottom:15px;max-height:calc(100vh - 30px);border-radius:30px}#bottom{left:50%;width:460px;transform:translateX(-50%);border-radius:24px 24px 0 0}}
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas><div id="veil"></div>
+<header id="head"><div class="logo"><div class="mark">V</div><div><strong>VIVARA</strong><small>SOCIAL UNIVERSE</small></div></div>
+<button class="room-pill" data-open="rooms"><strong id="room-label">Skyline Loft</strong><small>● Mundo privado · disponível offline</small></button></header>
+<div id="tip">ARRASTE PARA GIRAR A CÂMERA</div>
+<div id="avatar-name">Meu Avatar</div>
+<div id="joy" aria-label="Controle de movimentação"><div id="nub"></div></div>
+<div id="controls"><button class="action" data-open="wardrobe"><b>✦</b><span>Avatar</span></button><button class="action" data-open="poses"><b>♫</b><span>Poses</span></button><button class="action" data-open="rooms"><b>⌂</b><span>Salas</span></button></div>
+<div id="bottom"><button class="nav active" data-open="home"><b>◈</b>Início</button><button class="nav" data-open="wardrobe"><b>✧</b>Estilo</button><button class="nav" data-open="rooms"><b>⌂</b>Mundos</button><button class="nav" data-open="poses"><b>♬</b>Danças</button><button class="nav" data-open="chat"><b>◉</b>Chat</button></div>
+<div id="status" role="status"></div><div id="shade"></div>
+<section id="sheet" role="dialog" aria-label="Painel do jogo"><div class="handle"></div><div class="sheet-top"><div><div class="eyebrow">EXPLORE SEU MUNDO</div><h2 id="sheet-title">Avatar</h2></div><button id="close" class="close">×</button></div><div id="sheet-body"></div></section>
+<script type="module">
+import * as THREE from "./three.module.js";
+const $ = id=>document.getElementById(id);
+const defaults={name:"Meu Avatar",body:"fem",skin:2,hair:"long",hairColor:0,outfit:"noir",room:"loft",pose:"idle"};
+let s={...defaults};try{Object.assign(s,JSON.parse(localStorage.getItem("vivara-character")||"{}"));}catch(_){}
+function save(){try{localStorage.setItem("vivara-character",JSON.stringify(s));}catch(_){}}
+const skins=["#f4d7c4","#dbaa8b","#ae745e","#80503f","#50352d"],hairColors=["#261824","#78402d","#caa06b","#150f1d","#aa4e7a"];
+const looks={noir:{name:"Midnight Chic",top:"#1e1923",bottom:"#161321",trim:"#dac19c"},rose:{name:"Rose Couture",top:"#c36b91",bottom:"#843854",trim:"#f9c6de"},ivory:{name:"Ivory Luxe",top:"#e7d7c4",bottom:"#a89890",trim:"#e9c78d"},denim:{name:"City Denim",top:"#537caf",bottom:"#233452",trim:"#d2d9ea"}};
+const roomData={loft:{name:"Skyline Loft",floor:"#47394a",wall:"#27243a",sky:"#16172f",light:"#e5a9dc"},terrace:{name:"Sunset Terrace",floor:"#876172",wall:"#4c3650",sky:"#4e2c53",light:"#ffbc91"},club:{name:"Nocturne Club",floor:"#2a283c",wall:"#13162a",sky:"#101020",light:"#ac8ffc"}};
+let scene,cam,renderer,clock,avatar,armL,armR,legL,legR,hips,headBone,hairGroup,clothing,skinMat,trimMat,shirt,skyMat,wallMat,floorMat,roomGroup;
+let phase=0,angle=.17,zoom=7.8,opening="",toastTimeout=0,move={x:0,y:0},drag=null;
+const mat=(hex,rough=.72,metal=0)=>new THREE.MeshStandardMaterial({color:hex,roughness:rough,metalness:metal});
+function mesh(shape,material,parent,x=0,y=0,z=0,sx=1,sy=1,sz=1){const m=new THREE.Mesh(shape,material);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+const ball=(p,m,x,y,z,a,b,c)=>mesh(new THREE.SphereGeometry(1,24,16),m,p,x,y,z,a,b,c);
+const cube=(p,m,x,y,z,w,h,d)=>mesh(new THREE.BoxGeometry(1,1,1),m,p,x,y,z,w,h,d);
+const tube=(p,m,r1,r2,h,x,y,z)=>mesh(new THREE.CylinderGeometry(r1,r2,h,20),m,p,x,y,z);
+function makeAvatar(){
+ avatar=new THREE.Group();scene.add(avatar);
+ hips=new THREE.Group();hips.position.y=1.07;avatar.add(hips);
+ const body=s.body==="masc";const scale=body?1.06:1;
+ const skin=mat(skins[s.skin],.85);skinMat=skin;
+ const shirtMat=mat(looks[s.outfit].top,.5,.08),bottomMat=mat(looks[s.outfit].bottom,.63,.04);trimMat=mat(looks[s.outfit].trim,.35,.48);
+ shirt=shirtMat;clothing={top:shirtMat,bottom:bottomMat,objects:[]};
+ ball(hips,shirtMat,0,.47,0,body?.38:.33,.63,.24);
+ ball(hips,bottomMat,0,-.10,0,body?.34:.41,.28,.265);
+ tube(hips,skin,.155,.17,.19,0,.98,0);
+ const chestDetail=ball(hips,trimMat,0,.61,.235,.16,.025,.018);
+ const belt=tube(hips,trimMat,body?.36:.40,body?.36:.40,.042,0,.05,0);
+ headBone=new THREE.Group();headBone.position.set(0,1.11,0);hips.add(headBone);
+ const face=ball(headBone,skin,0,.28,.04,body?.29:.28,.37,.275);
+ const jaw=ball(headBone,skin,0,.075,.07,.22,.155,.22);
+ for(const sign of [-1,1]){
+   const ear=ball(headBone,skin,sign*.285,.24,.035,.07,.13,.063);
+   const eyeWhite=ball(headBone,mat("#fdf5f3",.24),sign*.116,.335,.285,.092,.062,.026);
+   ball(headBone,mat("#463329",.25),sign*.116,.338,.314,.036,.043,.018);
+   ball(headBone,mat("#18121d",.2),sign*.116,.340,.330,.023,.029,.01);
+   const brow=ball(headBone,mat(hairColors[s.hairColor]),sign*.116,.426,.297,.107,.018,.022);
+   if(!body)ball(headBone,mat("#7b4a47",.8),sign*.19,.17,.275,.075,.035,.018);
+ }
+ ball(headBone,skin,0,.242,.312,.066,.107,.078);
+ ball(headBone,mat("#a65869",.45),0,.089,.269,.108,.025,.021);
+ hairGroup=new THREE.Group();headBone.add(hairGroup);createHair();
+ for(const sign of [-1,1]){
+   const shoulder=new THREE.Group();shoulder.position.set(sign*(body?.43:.36),.83,0);hips.add(shoulder);if(sign<0)armL=shoulder;else armR=shoulder;
+   ball(shoulder,shirtMat,0,-.22,0,.165,.32,.165);
+   ball(shoulder,skin,0,-.49,0,.112,.22,.105);
+   ball(shoulder,skin,0,-.71,.005,.105,.12,.094);
+   const leg=new THREE.Group();leg.position.set(sign*.205,-.24,0);hips.add(leg);if(sign<0)legL=leg;else legR=leg;
+   ball(leg,bottomMat,0,-.37,0,.17,.45,.19);
+   ball(leg,skin,0,-.79,.01,.12,.18,.13);
+   ball(leg,mat("#18141f",.48),0,-.96,.12,.15,.12,.25);
+ }
+ if(!body){const skirt=mesh(new THREE.CylinderGeometry(.39,.53,.57,28),bottomMat,hips,0,-.20,0);clothing.objects.push(skirt);}
+}
+function createHair(){
+ while(hairGroup.children.length){const a=hairGroup.children[0];hairGroup.remove(a);a.geometry?.dispose();a.material?.dispose();}
+ const hairmat=mat(hairColors[s.hairColor],.32,.1);
+ ball(hairGroup,hairmat,0,.47,-.028,.302,.25,.288);
+ if(s.hair==="bun"){
+    ball(hairGroup,hairmat,0,.69,-.18,.20,.18,.19);
+ } else if(s.hair==="bob"){
+   for(let i=0;i<22;i++){const a=i/21*Math.PI;ball(hairGroup,hairmat,Math.cos(a)*.26,.18,Math.sin(a)*.21-.05,.07,.30,.075);}
+ } else if(s.hair==="short"){
+   for(let i=0;i<14;i++){const a=i*2.4;ball(hairGroup,hairmat,Math.cos(a)*.16,.67,Math.sin(a)*.13,.075,.14,.084);}
+ } else {
+   for(let i=0;i<28;i++){const a=i/28*Math.PI*2,x=Math.cos(a)*.26,z=Math.sin(a)*.225-.06;const length=(i%4===0?.62:.88);let strand=ball(hairGroup,hairmat,x,.07-length*.30,z-.025,.057,length*.47,.060);strand.rotation.z=.1*Math.cos(a);}
+   ball(hairGroup,hairmat,0,.12,-.24,.27,.48,.13);
+ }
+}
+function addPlant(parent,x,z){
+ const potMat=mat("#be9690"),leafMat=mat("#527b60");
+ tube(parent,potMat,.30,.23,.36,x,.19,z);
+ for(let i=0;i<9;i++){let a=i*2.40;const leaf=ball(parent,leafMat,x+Math.cos(a)*.24,.7+(i%3)*.16,z+Math.sin(a)*.24,.11,.31,.10);leaf.rotation.z=Math.cos(a)*.7;leaf.rotation.x=Math.sin(a)*.6}
+}
+function makeRoom(){
+ if(roomGroup){scene.remove(roomGroup);roomGroup.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});}
+ roomGroup=new THREE.Group();scene.add(roomGroup);
+ const r=roomData[s.room],floor=mat(r.floor,.46,.12),wall=mat(r.wall,.79),wood=mat("#7a5860",.6,.08),metal=mat("#c9b7bb",.42,.52),glass=mat("#768fc6",.10,.55),velvet=mat("#70455d",.86);
+ floorMat=floor;wallMat=wall;scene.background=new THREE.Color(r.sky);scene.fog=new THREE.FogExp2(r.sky,.018);
+ cube(roomGroup,floor,0,-.09,0,23,.18,20);
+ const rug=mat("#675c76",.89);
+ if(s.room==="loft"){
+   cube(roomGroup,wall,0,5.5,-7.7,23,11,.30);
+   cube(roomGroup,wall,-9.5,5,0,.30,10,17);
+   for(let i=0;i<7;i++){
+    const x=-7.7+i*2.5;
+    cube(roomGroup,metal,x,5,-7.48,.085,7,.20);
+    cube(roomGroup,glass,x+1.23,5,-7.58,2.32,7,.06);
+   }
+   for(let i=0;i<18;i++){let x=-8.1+(i%9)*1.93,z=-12-3*Math.floor(i/9);cube(roomGroup,mat(i%3?"#242440":"#34304d"),x,1.0+(i%5)*.35,z,.95,3.2+(i%5)*.7,.8);}
+   cube(roomGroup,rug,0,.015,-1,5,.04,3.5);
+   cube(roomGroup,velvet,-2,.5,-2.5,3.2,.75,1.15);cube(roomGroup,velvet,-2,1.15,-3,.31,.68,1.05);
+   cube(roomGroup,velvet,-3.4,.81,-2.5,.22,.63,1.08);cube(roomGroup,velvet,-.60,.81,-2.5,.22,.63,1.08);
+   cube(roomGroup,wood,1,.37,-1.8,1.6,.10,.9);
+   for(let a of [-.61,.61])for(let b of [-.29,.29])cube(roomGroup,metal,1+a,.16,-1.8+b,.05,.31,.05);
+   addPlant(roomGroup,3.7,-3.6);addPlant(roomGroup,-6,-4.9);
+   cube(roomGroup,mat("#d3bbab",.45),4.8,2,-6.45,2.6,2,.07);cube(roomGroup,mat("#744e83"),4.8,2,-6.37,2.4,1.8,.08);
+ }else if(s.room==="terrace"){
+   cube(roomGroup,mat("#86677e"),0,2,-8.3,22,4,.20);
+   for(let x=-10;x<=10;x+=2.5)cube(roomGroup,metal,x,1,-7.2,.07,2.1,.10);
+   cube(roomGroup,glass,0,1.3,-7.2,20,1.9,.035);
+   for(let i=0;i<6;i++){cube(roomGroup,velvet,-5+i*2,.45,-3.0,1.5,.55,.9);cube(roomGroup,velvet,-5+i*2,.90,-3.3,1.5,.45,.17);}
+   cube(roomGroup,wood,3,.7,-1.5,2,.10,1.1);addPlant(roomGroup,-7,-3.6);addPlant(roomGroup,6,-4);
+   const sphere=ball(roomGroup,mat("#ffd3aa",.08),5,7,-35,3,3,.5);sphere.material.emissive=new THREE.Color("#f8b47e");sphere.material.emissiveIntensity=.6;
+ }else{
+   cube(roomGroup,wall,0,5,-7.2,22,10,.30);cube(roomGroup,wall,-9,5,0,.3,10,15);
+   cube(roomGroup,mat("#302b51"),0,.15,-4.4,7,.3,3);
+   for(let i=0;i<10;i++){
+     const x=-6+i*1.35;
+     const glow=mat(i%2?"#9270dc":"#ef8bbf",.2,.45);glow.emissive=new THREE.Color(glow.color);glow.emissiveIntensity=.6;
+     cube(roomGroup,glow,x,4.7,-6.98,.23,6,.1);
+   }
+   cube(roomGroup,velvet,-5,.55,-1.6,3,.55,1);cube(roomGroup,velvet,-5,1,-2,3,.65,.3);
+   cube(roomGroup,velvet,5,.55,-1.6,3,.55,1);cube(roomGroup,velvet,5,1,-2,3,.65,.3);
+   for(let x of [-3,3]){tube(roomGroup,metal,.65,.65,.07,x,.65,-1);tube(roomGroup,metal,.06,.06,.65,x,.30,-1);}
+   cube(roomGroup,rug,0,.01,-1,5,.04,2.8);
+ }
+ for(let i=0;i<10;i++){const p=ball(roomGroup,mat(i%2?"#efd1ac":"#b29ce6"),i*1.8-8,7,-5,.10,.10,.10);p.material.emissive=p.material.color.clone();p.material.emissiveIntensity=1.1;}
+}
+function refreshAvatar(){
+ scene.remove(avatar);avatar.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});
+ makeAvatar();avatar.position.set(0,0,0);$("avatar-name").textContent=s.name.slice(0,24);
+}
+function chooseRoom(id){if(!roomData[id])return;s.room=id;makeRoom();$("room-label").textContent=roomData[id].name;avatar.position.set(0,0,0);save();renderPanel();}
+function toast(msg){const el=$("status");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove("show"),2100);}
+function btn(label,section,val,chosen){const e=document.createElement("button");e.type="button";e.className="opt"+(chosen?" selected":"");e.textContent=label;e.onclick=()=>{if(section==="room"){chooseRoom(val);}else{s[section]=val;if(section==="pose"){}else refreshAvatar();save();renderPanel();}};return e;}
+function line(h){let p=document.createElement("p");p.className="section-title";p.textContent=h;return p;}
+function options(holder,section,items){const grid=document.createElement("div");grid.className="choices";items.forEach(([v,t])=>grid.appendChild(btn(t,section,v,s[section]===v)));holder.appendChild(grid);}
+function swatches(holder,key,colors){let w=document.createElement("div");w.className="swatches";colors.forEach((c,i)=>{let b=document.createElement("button");b.type="button";b.className="swatch"+(s[key]===i?" selected":"");b.style.background=c;b.onclick=()=>{s[key]=i;refreshAvatar();save();renderPanel();};w.appendChild(b)});holder.appendChild(w)}
+function renderPanel(){
+ const body=$("sheet-body");body.replaceChildren();
+ if(opening==="wardrobe"){
+   $("sheet-title").textContent="Meu avatar";
+   body.appendChild(line("CORPO"));options(body,"body",[["fem","Feminino"],["masc","Masculino"]]);
+   body.appendChild(line("TONALIDADE DA PELE"));swatches(body,"skin",skins);
+   body.appendChild(line("CABELO 3D"));options(body,"hair",[["long","Longo em camadas"],["bob","Bob sofisticado"],["bun","Coque alto"],["short","Curto texturizado"]]);
+   body.appendChild(line("COR DO CABELO"));swatches(body,"hairColor",hairColors);
+   body.appendChild(line("LOOK"));options(body,"outfit",Object.entries(looks).map(([v,o])=>[v,o.name]));
+   body.appendChild(line("NOME DO AVATAR"));
+   const row=document.createElement("div");row.className="textrow";const input=document.createElement("input");input.maxLength=24;input.value=s.name;input.placeholder="Nome do avatar";
+   const submit=document.createElement("button");submit.className="send";submit.textContent="Salvar";submit.onclick=()=>{s.name=input.value.trim()||defaults.name;$("avatar-name").textContent=s.name;save();toast("Avatar salvo!")};row.append(input,submit);body.appendChild(row);
+ }else if(opening==="rooms"){
+   $("sheet-title").textContent="Mundos 3D";body.appendChild(line("ESCOLHA SEU CENÁRIO"));options(body,"room",[["loft","✧ Skyline Loft"],["terrace","☀ Sunset Terrace"],["club","♫ Nocturne Club"]]);
+   let note=document.createElement("p");note.className="note";note.textContent="Os 3 ambientes estão incluídos no aparelho. Alterne instantaneamente, inclusive sem internet.";body.appendChild(note);
+ }else if(opening==="poses"){
+   $("sheet-title").textContent="Poses e dança";body.appendChild(line("ANIMAÇÕES"));options(body,"pose",[["idle","✦ Natural"],["wave","♡ Acenar"],["dance","♫ Dançar"],["victory","✌ Vitória"]]);
+ }else if(opening==="chat"){
+   $("sheet-title").textContent="Chat do mundo";let note=document.createElement("p");note.className="note";note.textContent="Modo offline: mensagens visíveis somente para você. Multiplayer exige servidor conectado.";body.appendChild(note);
+   const messages=document.createElement("div");messages.className="messages";messages.id="messages";messages.textContent="Bem-vindo ao VIVARA! ✦";body.appendChild(messages);
+   const row=document.createElement("div");row.className="textrow";row.style.marginTop="10px";const field=document.createElement("input");field.placeholder="Escreva uma mensagem";field.maxLength=240;const send=document.createElement("button");send.className="send";send.textContent="Enviar";
+   const doSend=()=>{let v=field.value.trim();if(!v)return;const p=document.createElement("div");p.textContent=s.name+": "+v;messages.appendChild(p);messages.scrollTop=messages.scrollHeight;field.value=""};send.onclick=doSend;field.onkeydown=e=>{if(e.key==="Enter")doSend()};row.append(field,send);body.appendChild(row);
+ }else{
+   $("sheet-title").textContent="Bem-vindo ao VIVARA";let note=document.createElement("p");note.className="note";note.textContent="Explore o cenário com o controle circular. Gire a câmera arrastando a tela. Crie looks, mude de sala e escolha animações. A versão é uma experiência 3D local para testar no iPhone.";body.appendChild(note);
+   body.appendChild(line("COMECE A JOGAR"));const grid=document.createElement("div");grid.className="choices";
+   [["Avatar","wardrobe"],["Explorar salas","rooms"],["Dançar","poses"]].forEach(([name,id])=>{let b=document.createElement("button");b.className="opt";b.textContent=name;b.onclick=()=>openPanel(id);grid.appendChild(b)});body.appendChild(grid);
+ }
+}
+function openPanel(key){opening=key;renderPanel();$("shade").classList.add("open");$("sheet").classList.add("open");document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.open===key));}
+function closePanel(){opening="";$("shade").classList.remove("open");$("sheet").classList.remove("open");document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.open==="home"))}
+document.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openPanel(b.dataset.open)));
+$("shade").onclick=closePanel;$("close").onclick=closePanel;
+function init(){
+ scene=new THREE.Scene();clock=new THREE.Clock();cam=new THREE.PerspectiveCamera(44,innerWidth/innerHeight,.1,180);
+ renderer=new THREE.WebGLRenderer({canvas:$("scene"),antialias:true,powerPreference:"high-performance",alpha:false});
+ renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.65));renderer.setSize(innerWidth,innerHeight,false);renderer.outputColorSpace=THREE.SRGBColorSpace;
+ renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.24;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ scene.add(new THREE.HemisphereLight(0xd2dcff,0x45343a,2.4));
+ const key=new THREE.DirectionalLight(0xffe6e0,3);key.position.set(-4,8,5);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=-9;key.shadow.camera.right=9;key.shadow.camera.top=9;key.shadow.camera.bottom=-9;scene.add(key);
+ const rim=new THREE.PointLight(0xec96d6,68,17,2);rim.position.set(2,5,-3);scene.add(rim);const fill=new THREE.PointLight(0x8fa8ff,33,14,2);fill.position.set(-4,3,2);scene.add(fill);
+ makeRoom();makeAvatar();$("room-label").textContent=roomData[s.room].name;$("avatar-name").textContent=s.name.slice(0,24);
+ window.addEventListener("resize",()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight,false)});
+ renderer.domElement.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY,id:e.pointerId};renderer.domElement.setPointerCapture(e.pointerId)});
+ renderer.domElement.addEventListener("pointermove",e=>{if(!drag||drag.id!==e.pointerId)return;angle+=(e.clientX-drag.x)*.007;zoom=Math.max(4.0,Math.min(11,zoom+(e.clientY-drag.y)*.018));drag.x=e.clientX;drag.y=e.clientY});
+ renderer.domElement.addEventListener("pointerup",()=>drag=null);renderer.domElement.addEventListener("pointercancel",()=>drag=null);
+ let joy=$("joy"),nub=$("nub"),joyId=null;const stop=()=>{joyId=null;move={x:0,y:0};nub.style.transform=""};
+ joy.addEventListener("pointerdown",e=>{joyId=e.pointerId;joy.setPointerCapture(e.pointerId);updateJoy(e)});
+ joy.addEventListener("pointermove",e=>{if(e.pointerId===joyId)updateJoy(e)});
+ joy.addEventListener("pointerup",stop);joy.addEventListener("pointercancel",stop);
+ function updateJoy(e){let rect=joy.getBoundingClientRect(),dx=e.clientX-(rect.left+rect.width/2),dy=e.clientY-(rect.top+rect.height/2),len=Math.hypot(dx,dy),scale=Math.min(1,37/Math.max(len,.001));move={x:dx*scale/37,y:dy*scale/37};nub.style.transform="translate("+(dx*scale)+"px,"+(dy*scale)+"px)";}
+ window.addEventListener("keydown",e=>{if(["ArrowUp","w"].includes(e.key))move.y=-1;if(["ArrowDown","s"].includes(e.key))move.y=1;if(["ArrowLeft","a"].includes(e.key))move.x=-1;if(["ArrowRight","d"].includes(e.key))move.x=1});
+ window.addEventListener("keyup",e=>{if(["ArrowUp","ArrowDown","w","s"].includes(e.key))move.y=0;if(["ArrowLeft","ArrowRight","a","d"].includes(e.key))move.x=0});
+ function tick(){
+   requestAnimationFrame(tick);if(document.hidden)return;
+   const dt=Math.min(clock.getDelta(),.05);phase+=dt;
+   const moving=Math.hypot(move.x,move.y)>.06;
+   if(moving){const forward=-move.y,right=move.x,dx=(right*Math.cos(angle)+forward*Math.sin(angle))*dt*2.3,dz=(right*Math.sin(angle)-forward*Math.cos(angle))*dt*2.3;avatar.position.x=Math.max(-7,Math.min(7,avatar.position.x+dx));avatar.position.z=Math.max(-6,Math.min(5,avatar.position.z+dz));avatar.rotation.y=Math.atan2(dx,dz);}
+   const walk=moving?Math.sin(phase*9)*.50:0,dance=s.pose==="dance",victory=s.pose==="victory",wave=s.pose==="wave";
+   legL.rotation.x=-walk+(dance?Math.sin(phase*6)*.17:0);legR.rotation.x=walk-(dance?Math.sin(phase*6)*.17:0);
+   armL.rotation.z=wave?-.15:dance?-.35+Math.sin(phase*7)*.55:victory?-.95:-.10;
+   armR.rotation.z=wave?-.35+Math.sin(phase*9)*.28:dance?.30+Math.cos(phase*7)*.45:victory?.95:.10;
+   armL.rotation.x=-walk*.55;armR.rotation.x=walk*.55;hips.rotation.z=dance?Math.sin(phase*6)*.08:Math.sin(phase*1.5)*.01;
+   avatar.position.y=dance?Math.abs(Math.sin(phase*6))*.075:Math.abs(walk)*.022;
+   headBone.rotation.z=dance?Math.sin(phase*3)*.06:Math.sin(phase*1.0)*.02;
+   const t=new THREE.Vector3(avatar.position.x+Math.sin(angle)*zoom,3.3+zoom*.15,avatar.position.z+Math.cos(angle)*zoom);
+   cam.position.lerp(t,Math.min(1,dt*6));cam.lookAt(avatar.position.x,1.33,avatar.position.z);
+   renderer.render(scene,cam);
+ }
+ tick();
+}
+try{init()}catch(error){console.error(error);$("tip").textContent="Erro ao iniciar mundo 3D. Verifique a compatibilidade WebGL.";openPanel("home")}
+</script></body></html>
